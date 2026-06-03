@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Python Service</title>
+  </head>
+  <body>
+    <h1>Key Lookup</h1>
+    <form method="get" action="/">
+      <input name="key" placeholder="Enter key" value="{{ key or '' }}" />
+      <button type="submit">Search</button>
+    </form>
+
+    {% if key %}
+      <p><strong>{{ key }}</strong> -> {{ value if value is not none else "not found" }}</p>
+    {% endif %}
+  </body>
+</html>
