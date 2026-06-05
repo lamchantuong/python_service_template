@@ -30,6 +30,23 @@ mypy
 pyright
 ```
 
+## Pre-commit (check before every commit)
+
+Config lives in `.pre-commit-config.yaml` (committed to git). After clone/setup, each developer runs **once**:
+
+```bash
+pip install -e ".[dev]"
+pre-commit install
+```
+
+From then on, `git commit` automatically runs Ruff + Mypy (and basic file checks). To run manually on all files:
+
+```bash
+pre-commit run --all-files
+```
+
+CI also runs the same hooks so everyone stays aligned even if hooks are skipped locally.
+
 ## Run (foreground)
 
 After `pip install -e .`, use the console script or `main.py`:
