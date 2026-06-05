@@ -90,7 +90,10 @@ def daemon_start(
         "--port",
         str(port),
     ]
-    creationflags = subprocess.DETACHED_PROCESS | subprocess.CREATE_NEW_PROCESS_GROUP
+    # Windows-only constants; getattr keeps mypy happy on Linux CI.
+    creationflags = getattr(subprocess, "DETACHED_PROCESS", 0) | getattr(
+        subprocess, "CREATE_NEW_PROCESS_GROUP", 0
+    )
     proc = subprocess.Popen(  # noqa: S603
         cmd,
         cwd=str(BASE_DIR),
