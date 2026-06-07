@@ -1,7 +1,7 @@
 import copy
 from pathlib import Path
 
-import uvicorn
+from uvicorn.config import LOGGING_CONFIG
 
 _VALID_LEVELS = frozenset({"critical", "error", "warning", "info", "debug", "trace"})
 
@@ -22,7 +22,7 @@ def build_uvicorn_log_config(
     log_level: str,
     log_file: Path | None = None,
 ) -> dict[str, object]:
-    config: dict[str, object] = copy.deepcopy(uvicorn.config.LOGGING_CONFIG)
+    config: dict[str, object] = copy.deepcopy(LOGGING_CONFIG)
     level = _logging_level(log_level)
 
     loggers = config["loggers"]
