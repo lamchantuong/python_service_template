@@ -22,6 +22,16 @@ class Settings:
     port: int
     data_file: Path
     reload: bool
+    log_level: str
+    access_log: bool
+    log_file: Path | None
+
+
+def _resolve_path(raw: str | None, *, default: Path | None = None) -> Path | None:
+    if raw is None or not raw.strip():
+        return default
+    path = Path(raw.strip())
+    return path if path.is_absolute() else BASE_DIR / path
 
 
 @lru_cache
@@ -33,4 +43,7 @@ def get_settings() -> Settings:
         port=int(os.getenv("PORT", "8000")),
         data_file=data_file,
         reload=_env_bool("RELOAD", True),
+        log_level=os.getenv("LOG_LEVEL", "info").strip().lower(),
+        access_log=_env_bool("ACCESS_LOG", True),
+        log_file=_resolve_path(os.getenv("LOG_FILE")),
     )
