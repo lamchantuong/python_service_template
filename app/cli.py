@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 
@@ -6,11 +7,23 @@ import uvicorn
 
 from app.config import BASE_DIR, get_settings
 from app.data_store import get_value
+from app.logging_config import build_uvicorn_log_config, normalize_log_level
 
 cli = typer.Typer(help="Simple Python service CLI")
 daemon = typer.Typer(help="Background daemon commands")
 cli.add_typer(daemon, name="daemon")
 PID_FILE = BASE_DIR / ".daemon.pid"
+DEFAULT_DAEMON_LOG = BASE_DIR / "logs" / "app.log"
+
+
+def _uvicorn_log_kwargs(settings=None):
+    settings = settings or get_settings()
+    log_level = normalize_log_level(settings.log_level)
+    return {
+        "log_level": log_level,
+        "access_log": settings.access_log,
+        "log_config": build_uvicorn_log_config(log_level, settings.log_file),
+    }
 
 
 @cli.command("get")
@@ -36,6 +49,7 @@ def serve_command(
         host=host if host is not None else settings.host,
         port=port if port is not None else settings.port,
         reload=reload if reload is not None else settings.reload,
+        **_uvicorn_log_kwargs(settings),
     )
 
 
@@ -80,16 +94,26 @@ def daemon_start(
     if PID_FILE.exists():
         PID_FILE.unlink()
 
+    log_path = settings.log_file or DEFAULT_DAEMON_LOG
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+
+    env = os.environ.copy()
+    env["LOG_FILE"] = str(log_path)
+    env["RELOAD"] = "false"
+    if not settings.access_log:
+        env["ACCESS_LOG"] = "false"
+
     cmd = [
         sys.executable,
-        "-m",
-        "uvicorn",
-        "app.api:app",
+        str(BASE_DIR / "main.py"),
+        "serve",
         "--host",
         host,
         "--port",
         str(port),
+        "--no-reload",
     ]
+
     # Windows-only constants; getattr keeps mypy happy on Linux CI.
     creationflags = getattr(subprocess, "DETACHED_PROCESS", 0) | getattr(
         subprocess, "CREATE_NEW_PROCESS_GROUP", 0
@@ -99,10 +123,11 @@ def daemon_start(
         cwd=str(BASE_DIR),
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
+        env=env,
         creationflags=creationflags,
     )
     PID_FILE.write_text(str(proc.pid), encoding="utf-8")
-    typer.echo(f"daemon started (pid={proc.pid})")
+    typer.echo(f"daemon started (pid={proc.pid}, log={log_path})")
 
 
 @daemon.command("stop")

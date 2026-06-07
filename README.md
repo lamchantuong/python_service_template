@@ -13,12 +13,15 @@ Dependencies use compatible releases in `pyproject.toml` (`~=`, e.g. `fastapi~=0
 
 Configuration (`.env` or environment variables):
 
-| Variable   | Default       | Description              |
-|------------|---------------|--------------------------|
-| `HOST`     | `127.0.0.1`   | Server bind host         |
-| `PORT`     | `8000`        | Server bind port         |
-| `DATA_FILE`| `data.json`   | Path to JSON data file   |
-| `RELOAD`   | `true`        | Uvicorn auto-reload      |
+| Variable    | Default       | Description                                      |
+|-------------|---------------|--------------------------------------------------|
+| `HOST`      | `127.0.0.1`   | Server bind host                                 |
+| `PORT`      | `8000`        | Server bind port                                 |
+| `DATA_FILE` | `data.json`   | Path to JSON data file                           |
+| `RELOAD`    | `true`        | Uvicorn auto-reload                              |
+| `LOG_LEVEL` | `info`        | Log level: critical, error, warning, info, debug, trace |
+| `ACCESS_LOG`| `true`        | Uvicorn HTTP access log                          |
+| `LOG_FILE`  | *(unset)*     | Optional log file path (`serve`); daemon defaults to `logs/app.log` |
 
 ## Test & lint
 
